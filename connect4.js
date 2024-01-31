@@ -6,9 +6,10 @@ class Game {
   constructor(HEIGHT,WIDTH,color1,color2) {
     this.HEIGHT = HEIGHT;
     this.WIDTH = WIDTH;
-    this.players = [{num:1, color: color1}, {num:2, color:color2}];
+    this.players = [new Player(color1,1), new Player(color2,2)];
     this.currPlayer = this.players[0];
     this.board = [];
+    this.ongoing = true;
 
   }
   makeBoard() {
@@ -91,17 +92,38 @@ class Game {
   /** placeInTable: update DOM to place piece into HTML table of board */
   
   placeInTable(y, x) {
-    const piece = document.createElement('div');
-    piece.classList.add('piece');
-    piece.style.top = -50 * (y + 2);
-    piece.style.backgroundColor = this.currPlayer.color;
-    const spot = document.getElementById(`${y}-${x}`);
-    spot.append(piece);
+    if (!this.checkForWin()) {
+      const piece = document.createElement('div');
+      piece.classList.add('piece');
+      piece.style.top = -50 * (y + 2);
+      piece.style.backgroundColor = this.currPlayer.color;
+      const spot = document.getElementById(`${y}-${x}`);
+      spot.append(piece);
+    }
+    else if (this.checkForWin () && this.ongoing) {
+      const piece = document.createElement('div');
+      piece.classList.add('piece');
+      piece.style.top = -50 * (y + 2);
+      piece.style.backgroundColor = this.currPlayer.color;
+      const spot = document.getElementById(`${y}-${x}`);
+      spot.append(piece);
+    }
+    else if (!this.ongoing) {
+      if (this.checkForWin()) {
+        return this.endGame(`Player ${this.currPlayer.num} won!`);
+      }
+      
+      // check for tie
+      if (this.board.every(row => row.every(cell => cell))) {
+        return this.endGame('Tie!');
+      } 
+    }
   }
   
   /** endGame: announce game end */
   
   endGame(msg) {
+    this.ongoing = false;
     alert(msg);
   }
   
@@ -176,7 +198,7 @@ restart.addEventListener('click', function() {
 // Part Three: Make Player a Class
 class Player {
   constructor (str, playerNum) {
-    this.str = str;
+    this.color = str;
     this.num = playerNum;
   }
 }
